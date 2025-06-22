@@ -280,7 +280,6 @@ const Header: React.FC<HeaderProps> = ({
               </span>
             )}
           </button>
-          {/* Profile icon, name, and sign out (rightmost) */}
           {user ? (
             <div className="flex items-center space-x-2 text-white">
               <User className="w-4 h-4 md:w-5 md:h-5" />
