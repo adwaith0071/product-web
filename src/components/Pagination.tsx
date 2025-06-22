@@ -115,12 +115,13 @@ const Pagination: React.FC<PaginationProps> = ({
         <select
           value={itemsPerPage}
           onChange={handleItemsPerPageChange}
-          className="border border-gray-300 rounded px-2 py-1 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-xs md:text-sm"
+          className="border border-gray-300 rounded px-7 py-1 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-xs md:text-sm"
         >
-          <option value="10">10 rows</option>
-          <option value="20">20 rows</option>
-          <option value="50">50 rows</option>
+          <option value="10">10</option>
+          <option value="20">20</option>
+          <option value="50">50</option>
         </select>
+        <span>rows</span>
       </div>
     </div>
   );

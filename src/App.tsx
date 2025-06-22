@@ -4,6 +4,7 @@ import {
   Routes,
   Route,
   Navigate,
+  Outlet,
 } from "react-router-dom";
 import { Provider } from "react-redux";
 import { store } from "./store/store";
@@ -17,24 +18,28 @@ import SignUp from "./components/SignUp";
 import Home from "./pages/Home";
 import ProductDetails from "./pages/ProductDetails";
 import Wishlist from "./pages/Wishlist";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import AuthLayout from "./components/AuthLayout";
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const { isAuthenticated, isLoading } = useAppSelector((state) => state.auth);
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
+  const { isAuthenticated } = useAppSelector((state) => state.auth);
+  if (!isAuthenticated) {
+    return <Navigate to="/signin" />;
   }
+  return <>{children}</>;
+};
 
-  return isAuthenticated ? <>{children}</> : <Navigate to="/signin" />;
+const AuthRedirect: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
+  const { isAuthenticated } = useAppSelector((state) => state.auth);
+  if (isAuthenticated) {
+    return <Navigate to="/home" />;
+  }
+  return <>{children}</>;
 };
 
 const AppContent: React.FC = () => {
@@ -67,34 +72,45 @@ const AppContent: React.FC = () => {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Navigate to="/signin" />} />
-        <Route path="/signin" element={<SignIn />} />
-        <Route path="/signup" element={<SignUp />} />
+        <Route path="/" element={<Navigate to="/home" />} />
+
+        {/* Protected Routes */}
         <Route
-          path="/home"
           element={
             <ProtectedRoute>
-              <Home />
+              <Outlet />
             </ProtectedRoute>
           }
-        />
+        >
+          <Route path="/home" element={<Home />} />
+          <Route path="/product/:id" element={<ProductDetails />} />
+          <Route path="/wishlist" element={<Wishlist />} />
+        </Route>
+
+        {/* Auth Routes */}
         <Route
-          path="/product/:id"
           element={
-            <ProtectedRoute>
-              <ProductDetails />
-            </ProtectedRoute>
+            <AuthRedirect>
+              <Outlet />
+            </AuthRedirect>
           }
-        />
-        <Route
-          path="/wishlist"
-          element={
-            <ProtectedRoute>
-              <Wishlist />
-            </ProtectedRoute>
-          }
-        />
+        >
+          <Route path="/signin" element={<SignIn />} />
+          <Route path="/signup" element={<SignUp />} />
+        </Route>
       </Routes>
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
     </Router>
   );
 };

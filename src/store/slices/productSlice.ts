@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction, createAsyncThunk } from "@reduxjs/toolkit";
 import apiService from "../../services/api";
 import { Category, SubCategory, Product } from "../../types";
+import { toast } from "react-toastify";
 
 export const createCategory = createAsyncThunk(
   "products/createCategory",
@@ -8,12 +9,15 @@ export const createCategory = createAsyncThunk(
     try {
       const response = await apiService.createCategory(categoryName);
       if (response.success && response.data) {
+        toast.success("Category created successfully!");
         const { _id, name } = response.data.category as any;
         return { id: _id, name } as Category;
       } else {
+        toast.error(response.message || "Failed to create category.");
         return rejectWithValue(response.message);
       }
     } catch (error: any) {
+      toast.error(error.message || "Failed to create category.");
       return rejectWithValue(error.message);
     }
   }
@@ -55,6 +59,7 @@ export const createSubCategory = createAsyncThunk(
     try {
       const response = await apiService.createSubCategory(name, categoryId);
       if (response.success && response.data) {
+        toast.success("Subcategory created successfully!");
         const { products } = getState() as { products: ProductState };
         const category = products.categories.find((c) => c.id === categoryId);
         if (category) {
@@ -64,8 +69,10 @@ export const createSubCategory = createAsyncThunk(
           };
         }
       }
+      toast.error(response.message || "Could not find category");
       return rejectWithValue(response.message || "Could not find category");
     } catch (error: any) {
+      toast.error(error.message || "Failed to create subcategory.");
       return rejectWithValue(error.message);
     }
   }
@@ -222,11 +229,14 @@ export const updateProductThunk = createAsyncThunk(
     try {
       const response = await apiService.updateProduct(productId, formData);
       if (response.success && response.data) {
+        toast.success("Product updated successfully!");
         const product = response.data.product;
         return { ...product, id: product._id };
       }
+      toast.error(response.message || "Failed to update product.");
       return rejectWithValue(response.message);
     } catch (error: any) {
+      toast.error(error.message || "Failed to update product.");
       return rejectWithValue(error.message);
     }
   }
@@ -237,8 +247,10 @@ export const deleteProduct = createAsyncThunk(
   async (productId: string, { rejectWithValue }) => {
     try {
       await apiService.deleteProduct(productId);
+      toast.success("Product deleted successfully!");
       return productId;
     } catch (error: any) {
+      toast.error(error.message || "Failed to delete product.");
       return rejectWithValue(error.message);
     }
   }
@@ -250,11 +262,14 @@ export const createProduct = createAsyncThunk(
     try {
       const response = await apiService.createProduct(formData);
       if (response.success && response.data) {
+        toast.success("Product created successfully!");
         const product = response.data.product;
         return { ...product, id: product._id };
       }
+      toast.error(response.message || "Failed to create product.");
       return rejectWithValue(response.message);
     } catch (error: any) {
+      toast.error(error.message || "Failed to create product.");
       return rejectWithValue(error.message);
     }
   }

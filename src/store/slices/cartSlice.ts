@@ -1,4 +1,5 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { toast } from "react-toastify";
 
 interface CartItem {
   id: string;
@@ -23,13 +24,14 @@ const initialState: CartState = {
 };
 
 const cartSlice = createSlice({
-  name: 'cart',
+  name: "cart",
   initialState,
   reducers: {
-    addToCart: (state, action: PayloadAction<Omit<CartItem, 'id'>>) => {
+    addToCart: (state, action: PayloadAction<Omit<CartItem, "id">>) => {
       const existingItem = state.items.find(
-        item => item.productId === action.payload.productId && 
-        item.selectedVariant === action.payload.selectedVariant
+        (item) =>
+          item.productId === action.payload.productId &&
+          item.selectedVariant === action.payload.selectedVariant
       );
 
       if (existingItem) {
@@ -37,44 +39,62 @@ const cartSlice = createSlice({
       } else {
         const newItem: CartItem = {
           ...action.payload,
-          id: `${action.payload.productId}-${action.payload.selectedVariant}-${Date.now()}`,
+          id: `${action.payload.productId}-${
+            action.payload.selectedVariant
+          }-${Date.now()}`,
         };
         state.items.push(newItem);
       }
 
+      toast.success(`${action.payload.name} added to cart!`);
       cartSlice.caseReducers.calculateTotals(state);
     },
     removeFromCart: (state, action: PayloadAction<string>) => {
-      state.items = state.items.filter(item => item.id !== action.payload);
+      const itemToRemove = state.items.find(
+        (item) => item.id === action.payload
+      );
+      state.items = state.items.filter((item) => item.id !== action.payload);
+      if (itemToRemove) {
+        toast.info(`${itemToRemove.name} removed from cart.`);
+      }
       cartSlice.caseReducers.calculateTotals(state);
     },
-    updateQuantity: (state, action: PayloadAction<{ id: string; quantity: number }>) => {
-      const item = state.items.find(item => item.id === action.payload.id);
+    updateQuantity: (
+      state,
+      action: PayloadAction<{ id: string; quantity: number }>
+    ) => {
+      const item = state.items.find((item) => item.id === action.payload.id);
       if (item) {
         item.quantity = action.payload.quantity;
         if (item.quantity <= 0) {
-          state.items = state.items.filter(item => item.id !== action.payload.id);
+          state.items = state.items.filter(
+            (item) => item.id !== action.payload.id
+          );
         }
       }
+      toast.info(`Cart updated for ${item?.name}.`);
       cartSlice.caseReducers.calculateTotals(state);
     },
     clearCart: (state) => {
       state.items = [];
       state.total = 0;
       state.itemCount = 0;
+      toast.info("Cart cleared.");
     },
     calculateTotals: (state) => {
-      state.itemCount = state.items.reduce((total, item) => total + item.quantity, 0);
-      state.total = state.items.reduce((total, item) => total + (item.price * item.quantity), 0);
+      state.itemCount = state.items.reduce(
+        (total, item) => total + item.quantity,
+        0
+      );
+      state.total = state.items.reduce(
+        (total, item) => total + item.price * item.quantity,
+        0
+      );
     },
   },
 });
 
-export const {
-  addToCart,
-  removeFromCart,
-  updateQuantity,
-  clearCart,
-} = cartSlice.actions;
+export const { addToCart, removeFromCart, updateQuantity, clearCart } =
+  cartSlice.actions;
 
 export default cartSlice.reducer;

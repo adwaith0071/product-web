@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import apiService from "../../services/api";
+import { toast } from "react-toastify";
 
 interface User {
   id: string;
@@ -23,7 +24,7 @@ const initialState: AuthState = {
 
 // Async thunks
 export const signupUser = createAsyncThunk(
-  "auth/signup",
+  "auth/signupUser",
   async (
     {
       name,
@@ -34,32 +35,36 @@ export const signupUser = createAsyncThunk(
   ) => {
     try {
       const response = await apiService.signup(name, email, password);
-      if (response.data) {
+      if (response.success && response.data) {
         apiService.setToken(response.data.token);
+        toast.success("Signup successful!");
         return response.data.user;
       }
-      throw new Error(response.message);
+      return rejectWithValue(response.message);
     } catch (error: any) {
-      return rejectWithValue(error.message || "Signup failed");
+      toast.error(error.message || "Signup failed.");
+      return rejectWithValue(error.message);
     }
   }
 );
 
 export const loginUser = createAsyncThunk(
-  "auth/login",
+  "auth/loginUser",
   async (
     { email, password }: { email: string; password: string },
     { rejectWithValue }
   ) => {
     try {
       const response = await apiService.login(email, password);
-      if (response.data) {
+      if (response.success && response.data) {
         apiService.setToken(response.data.token);
+        toast.success("Login successful!");
         return response.data.user;
       }
-      throw new Error(response.message);
+      return rejectWithValue(response.message);
     } catch (error: any) {
-      return rejectWithValue(error.message || "Login failed");
+      toast.error(error.message || "Login failed.");
+      return rejectWithValue(error.message);
     }
   }
 );
@@ -80,16 +85,18 @@ export const getCurrentUser = createAsyncThunk(
 );
 
 export const logoutUser = createAsyncThunk(
-  "auth/logout",
+  "auth/logoutUser",
   async (_, { rejectWithValue }) => {
     try {
       await apiService.logout();
       apiService.removeToken();
+      toast.success("Logout successful!");
       return null;
     } catch (error: any) {
-      // Even if logout API fails, we should still clear local storage
+      // Even if logout fails, we clear the token on the client side
       apiService.removeToken();
-      return rejectWithValue(error.message || "Logout failed");
+      toast.error(error.message || "Logout failed.");
+      return rejectWithValue(error.message);
     }
   }
 );

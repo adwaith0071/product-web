@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import apiService from "../../services/api";
 import { Product } from "../../types";
+import { toast } from "react-toastify";
 
 export const fetchWishlist = createAsyncThunk(
   "wishlist/fetchWishlist",
@@ -22,8 +23,10 @@ export const addToWishlist = createAsyncThunk(
   async (product: Product, { rejectWithValue }) => {
     try {
       await apiService.addToWishlist(product.id);
+      toast.success(`${product.title} added to wishlist!`);
       return product;
     } catch (error: any) {
+      toast.error(error.message || "Failed to add to wishlist.");
       return rejectWithValue(error.message);
     }
   }
@@ -31,11 +34,15 @@ export const addToWishlist = createAsyncThunk(
 
 export const removeFromWishlist = createAsyncThunk(
   "wishlist/removeFromWishlist",
-  async (productId: string, { rejectWithValue }) => {
+  async (productId: string, { rejectWithValue, getState }) => {
     try {
       await apiService.removeFromWishlist(productId);
+      const state = getState() as { wishlist: WishlistState };
+      const product = state.wishlist.items.find((p) => p.id === productId);
+      toast.success(`${product?.title || "Item"} removed from wishlist!`);
       return productId;
     } catch (error: any) {
+      toast.error(error.message || "Failed to remove from wishlist.");
       return rejectWithValue(error.message);
     }
   }

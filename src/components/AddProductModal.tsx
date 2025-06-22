@@ -395,20 +395,10 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
             {initialData &&
               (images.length > 0 ||
                 existingImages.length < (initialData.images?.length || 0)) && (
-                <div className="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                  <p className="text-sm text-blue-800">
-                    <strong>Image Changes:</strong>
-                    {existingImages.length <
-                      (initialData.images?.length || 0) &&
-                      ` ${
-                        (initialData.images?.length || 0) -
-                        existingImages.length
-                      } image(s) removed,`}
-                    {images.length > 0 &&
-                      ` ${images.length} new image(s) added.`}
-                    {` Final count: ${
-                      existingImages.length + images.length
-                    } image(s).`}
+                <div className="mb-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                  <p className="text-sm text-amber-800">
+                    <strong>Note:</strong> Images will be uploaded with your new
+                    selection.
                   </p>
                 </div>
               )}

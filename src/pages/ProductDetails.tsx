@@ -13,6 +13,7 @@ import {
 } from "../store/slices/wishlistSlice";
 import Header from "../components/Header";
 import AddProductModal from "../components/AddProductModal";
+import ConfirmationModal from "../components/ConfirmationModal";
 import {
   CheckCircle,
   XCircle,
@@ -34,6 +35,7 @@ const ProductDetails: React.FC = () => {
   const [selectedRam, setSelectedRam] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -54,16 +56,14 @@ const ProductDetails: React.FC = () => {
   };
 
   const handleDeleteProduct = async () => {
-    if (
-      window.confirm("Are you sure you want to delete this product?") &&
-      selectedProduct
-    ) {
+    if (selectedProduct) {
       await dispatch(deleteProduct(selectedProduct.id)).unwrap();
+      setIsConfirmModalOpen(false);
       navigate("/home");
     }
   };
 
-  if (isLoading && !isEditModalOpen) {
+  if (isLoading && !isEditModalOpen && !isConfirmModalOpen) {
     return <div>Loading...</div>;
   }
 
@@ -94,8 +94,8 @@ const ProductDetails: React.FC = () => {
   return (
     <div className="bg-gray-50 min-h-screen">
       <Header />
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex items-center space-x-2 text-sm text-gray-600 mb-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
+        <div className="flex items-center space-x-2 text-sm text-gray-600 mb-8 relative z-20">
           <button
             onClick={() => navigate("/home")}
             className="hover:text-blue-600"
@@ -211,7 +211,7 @@ const ProductDetails: React.FC = () => {
                 Edit product
               </button>
               <button
-                onClick={handleDeleteProduct}
+                onClick={() => setIsConfirmModalOpen(true)}
                 className="flex-1 bg-red-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-red-700"
               >
                 Delete Product
@@ -237,14 +237,24 @@ const ProductDetails: React.FC = () => {
           <p className="text-gray-600 leading-relaxed">{description}</p>
         </div>
       </main>
-      <AddProductModal
-        isOpen={isEditModalOpen}
-        onClose={() => setIsEditModalOpen(false)}
-        onAddProduct={async () => {}} // Not used in edit mode
-        onUpdateProduct={handleUpdateProduct}
-        subCategories={allSubCategories}
+      {isEditModalOpen && selectedProduct && (
+        <AddProductModal
+          isOpen={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          onUpdateProduct={handleUpdateProduct}
+          onAddProduct={async () => {}}
+          initialData={selectedProduct}
+          subCategories={allSubCategories}
+          isLoading={isLoading}
+        />
+      )}
+      <ConfirmationModal
+        isOpen={isConfirmModalOpen}
+        onClose={() => setIsConfirmModalOpen(false)}
+        onConfirm={handleDeleteProduct}
+        title="Delete Product"
+        message="Are you sure you want to delete this product? This action cannot be undone."
         isLoading={isLoading}
-        initialData={selectedProduct}
       />
     </div>
   );

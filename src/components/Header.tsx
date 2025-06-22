@@ -158,7 +158,7 @@ const Header: React.FC<HeaderProps> = ({
   };
 
   return (
-    <header className="bg-header-blue py-3 md:py-4 px-4 md:px-6 shadow-lg sticky top-0 z-50">
+    <header className="bg-brand-dark py-3 md:py-4 px-4 md:px-6 shadow-lg sticky top-0 z-50">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         {/* Mobile Menu Button */}
         {showMenuButton && (

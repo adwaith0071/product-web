@@ -4,9 +4,9 @@ export default {
   theme: {
     extend: {
       colors: {
-        "header-blue": "#0f4a7b",
+        "brand-dark": "#004468",
       },
     },
   },
-  plugins: [],
+  plugins: [require("@tailwindcss/forms")],
 };
