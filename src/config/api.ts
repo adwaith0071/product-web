@@ -3,7 +3,7 @@
 export const API_CONFIG = {
   BASE_URL:
     import.meta.env.VITE_API_URL ||
-    "https://product-server-4-azyo.onrender.com" ||
+    "https://product-server-5.onrender.com/api" ||
     "http://localhost:5000/api",
   TIMEOUT: 10000, // 10 seconds
 };
