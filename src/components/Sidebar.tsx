@@ -5,6 +5,11 @@ import { useAppDispatch } from "../hooks/useAppDispatch";
 import {
   setSelectedCategory,
   setSelectedSubcategory,
+  fetchProductsByCategory,
+  fetchProductsBySubCategory,
+  fetchProducts,
+  setCurrentPage,
+  setFilteredProductsEmpty,
 } from "../store/slices/productSlice";
 
 interface SidebarProps {
@@ -18,25 +23,88 @@ const Sidebar: React.FC<SidebarProps> = ({
   onClose,
   isMobile = false,
 }) => {
-  const { categories, subcategories, selectedCategory, selectedSubcategory } =
-    useAppSelector((state) => state.products);
+  const {
+    categories,
+    subcategories,
+    allSubCategories,
+    selectedCategory,
+    selectedSubcategory,
+    itemsPerPage,
+    searchQuery,
+  } = useAppSelector((state) => state.products);
   const dispatch = useAppDispatch();
 
-  const handleCategoryClick = (category: string) => {
-    if (selectedCategory === category) {
+  const handleCategoryClick = (categoryName: string) => {
+    if (selectedCategory === categoryName) {
       dispatch(setSelectedCategory(null));
+      dispatch(setCurrentPage(1));
+      dispatch(fetchProducts({ search: searchQuery }));
     } else {
-      dispatch(setSelectedCategory(category));
+      const category = categories.find((cat) => cat.name === categoryName);
+      if (category) {
+        dispatch(setSelectedCategory(categoryName));
+        dispatch(setCurrentPage(1));
+
+        dispatch(setFilteredProductsEmpty());
+
+        dispatch(
+          fetchProductsByCategory({
+            categoryId: category.id,
+            params: {
+              page: 1,
+              limit: itemsPerPage,
+              search: searchQuery,
+            },
+          })
+        ).catch((error) => {
+          console.warn(
+            `Failed to fetch products for category ${categoryName}:`,
+            error
+          );
+        });
+      } else {
+        console.error(`Category ${categoryName} not found in categories`);
+      }
     }
   };
 
   const handleSubcategoryClick = (subcategory: string) => {
     if (selectedSubcategory === subcategory) {
       dispatch(setSelectedSubcategory(null));
+      dispatch(setCurrentPage(1));
+      dispatch(fetchProducts({ search: searchQuery }));
     } else {
-      dispatch(setSelectedSubcategory(subcategory));
+      const subCategory = allSubCategories.find(
+        (sub) => sub.name === subcategory
+      );
+
+      if (subCategory) {
+        dispatch(setSelectedSubcategory(subcategory));
+        dispatch(setCurrentPage(1));
+
+        dispatch(setFilteredProductsEmpty());
+
+        dispatch(
+          fetchProductsBySubCategory({
+            subCategoryId: subCategory.id,
+            params: {
+              page: 1,
+              limit: itemsPerPage,
+              search: searchQuery,
+            },
+          })
+        ).catch((error) => {
+          console.warn(
+            `Failed to fetch products for subcategory ${subcategory}:`,
+            error
+          );
+        });
+      } else {
+        console.error(
+          `Subcategory ${subcategory} not found in allSubCategories`
+        );
+      }
     }
-    // Close mobile menu after selection
     if (isMobile && onClose) {
       onClose();
     }
@@ -44,6 +112,9 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   const handleAllCategoriesClick = () => {
     dispatch(setSelectedCategory(null));
+    dispatch(setSelectedSubcategory(null));
+    dispatch(setCurrentPage(1));
+    dispatch(fetchProducts({ search: searchQuery }));
     if (isMobile && onClose) {
       onClose();
     }
@@ -84,49 +155,50 @@ const Sidebar: React.FC<SidebarProps> = ({
         </button>
 
         {categories.map((category) => (
-          <div key={category}>
+          <div key={category.id}>
             <button
-              onClick={() => handleCategoryClick(category)}
+              onClick={() => handleCategoryClick(category.name)}
               className={`w-full text-left px-4 py-3 rounded-lg transition-colors flex items-center justify-between text-sm md:text-base ${
-                selectedCategory === category
+                selectedCategory === category.name
                   ? "bg-amber-100 text-amber-800"
                   : "hover:bg-gray-100 text-gray-700"
               }`}
             >
-              <span>{category}</span>
-              {subcategories[category] &&
-                (selectedCategory === category ? (
+              <span>{category.name}</span>
+              {subcategories[category.name] &&
+                (selectedCategory === category.name ? (
                   <ChevronDown className="w-4 h-4" />
                 ) : (
                   <ChevronRight className="w-4 h-4" />
                 ))}
             </button>
 
-            {selectedCategory === category && subcategories[category] && (
-              <div className="ml-4 mt-2 space-y-2">
-                {subcategories[category].map((subcategory) => (
-                  <div
-                    key={subcategory}
-                    className="flex items-center space-x-3 px-4 py-2"
-                  >
-                    <input
-                      type="radio"
-                      id={subcategory}
-                      name="subcategory"
-                      checked={selectedSubcategory === subcategory}
-                      onChange={() => handleSubcategoryClick(subcategory)}
-                      className="w-4 h-4 text-amber-500 focus:ring-amber-500"
-                    />
-                    <label
-                      htmlFor={subcategory}
-                      className="text-sm text-gray-600 cursor-pointer flex-1"
+            {selectedCategory === category.name &&
+              subcategories[category.name] && (
+                <div className="ml-4 mt-2 space-y-2">
+                  {subcategories[category.name].map((subcategory) => (
+                    <div
+                      key={subcategory}
+                      className="flex items-center space-x-3 px-4 py-2"
                     >
-                      {subcategory}
-                    </label>
-                  </div>
-                ))}
-              </div>
-            )}
+                      <input
+                        type="radio"
+                        id={subcategory}
+                        name="subcategory"
+                        checked={selectedSubcategory === subcategory}
+                        onChange={() => handleSubcategoryClick(subcategory)}
+                        className="w-4 h-4 text-amber-500 focus:ring-amber-500"
+                      />
+                      <label
+                        htmlFor={subcategory}
+                        className="text-sm text-gray-600 cursor-pointer flex-1"
+                      >
+                        {subcategory}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              )}
           </div>
         ))}
       </div>

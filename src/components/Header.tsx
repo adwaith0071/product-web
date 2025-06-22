@@ -1,8 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Search, Heart, ShoppingCart, User, Menu, X } from "lucide-react";
 import { useAppSelector } from "../hooks/useAppSelector";
 import { useAppDispatch } from "../hooks/useAppDispatch";
-import { setSearchQuery } from "../store/slices/productSlice";
+import {
+  setSearchQuery,
+  fetchProducts,
+  fetchProductsByCategory,
+  fetchProductsBySubCategory,
+  setCurrentPage,
+} from "../store/slices/productSlice";
 import { logoutUser } from "../store/slices/authSlice";
 import { useNavigate } from "react-router-dom";
 
@@ -20,13 +26,124 @@ const Header: React.FC<HeaderProps> = ({
   const { user } = useAppSelector((state) => state.auth);
   const { itemCount } = useAppSelector((state) => state.cart);
   const { items: wishlistItems } = useAppSelector((state) => state.wishlist);
+  const {
+    selectedCategory,
+    selectedSubcategory,
+    categories,
+    allSubCategories,
+    itemsPerPage,
+    searchQuery,
+  } = useAppSelector((state) => state.products);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
+  // Sync search input with Redux state
+  useEffect(() => {
+    setSearchInput(searchQuery);
+  }, [searchQuery]);
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    dispatch(setSearchQuery(searchInput));
+
+    const searchTerm = searchInput.trim();
+
+    if (!searchTerm) {
+      return;
+    }
+
+    // Reset to page 1 when searching
+    dispatch(setCurrentPage(1));
+    dispatch(setSearchQuery(searchTerm));
+
+    // Search based on current filter state
+    if (selectedSubcategory) {
+      // Search within selected subcategory
+      const subCategory = allSubCategories.find(
+        (sub) => sub.name === selectedSubcategory
+      );
+      if (subCategory) {
+        dispatch(
+          fetchProductsBySubCategory({
+            subCategoryId: subCategory.id,
+            params: {
+              page: 1,
+              limit: itemsPerPage,
+              search: searchTerm,
+            },
+          })
+        );
+      }
+    } else if (selectedCategory) {
+      // Search within selected category
+      const category = categories.find((cat) => cat.name === selectedCategory);
+      if (category) {
+        dispatch(
+          fetchProductsByCategory({
+            categoryId: category.id,
+            params: {
+              page: 1,
+              limit: itemsPerPage,
+              search: searchTerm,
+            },
+          })
+        );
+      }
+    } else {
+      // Search all products
+      dispatch(
+        fetchProducts({
+          page: 1,
+          limit: itemsPerPage,
+          search: searchTerm,
+        })
+      );
+    }
+
     setIsSearchExpanded(false);
+  };
+
+  const handleClearSearch = () => {
+    setSearchInput("");
+    dispatch(setSearchQuery(""));
+    dispatch(setCurrentPage(1));
+
+    // Fetch products without search based on current filter state
+    if (selectedSubcategory) {
+      const subCategory = allSubCategories.find(
+        (sub) => sub.name === selectedSubcategory
+      );
+      if (subCategory) {
+        dispatch(
+          fetchProductsBySubCategory({
+            subCategoryId: subCategory.id,
+            params: {
+              page: 1,
+              limit: itemsPerPage,
+            },
+          })
+        );
+      }
+    } else if (selectedCategory) {
+      const category = categories.find((cat) => cat.name === selectedCategory);
+      if (category) {
+        dispatch(
+          fetchProductsByCategory({
+            categoryId: category.id,
+            params: {
+              page: 1,
+              limit: itemsPerPage,
+            },
+          })
+        );
+      }
+    } else {
+      dispatch(
+        fetchProducts({
+          page: 1,
+          limit: itemsPerPage,
+        })
+      );
+    }
   };
 
   const handleLogout = async () => {
@@ -93,7 +210,10 @@ const Header: React.FC<HeaderProps> = ({
                   </div>
                   <button
                     type="button"
-                    onClick={() => setIsSearchExpanded(false)}
+                    onClick={() => {
+                      setIsSearchExpanded(false);
+                      handleClearSearch();
+                    }}
                     className="text-white hover:text-amber-300 transition-colors p-1"
                   >
                     <X className="w-5 h-5" />
@@ -117,6 +237,15 @@ const Header: React.FC<HeaderProps> = ({
               >
                 Search
               </button>
+              {searchInput && (
+                <button
+                  type="button"
+                  onClick={handleClearSearch}
+                  className="absolute inset-y-1 right-20 text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
             </div>
           </div>
         </form>

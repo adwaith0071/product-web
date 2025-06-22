@@ -10,6 +10,7 @@ import { store } from "./store/store";
 import { useAppSelector } from "./hooks/useAppSelector";
 import { useAppDispatch } from "./hooks/useAppDispatch";
 import { getCurrentUser } from "./store/slices/authSlice";
+import { fetchWishlist } from "./store/slices/wishlistSlice";
 import apiService from "./services/api";
 import SignIn from "./components/SignIn";
 import SignUp from "./components/SignUp";
@@ -47,6 +48,7 @@ const AppContent: React.FC = () => {
     if (token && !isAuthenticated) {
       // If we have a token but user is not authenticated, try to get current user
       dispatch(getCurrentUser());
+      dispatch(fetchWishlist());
     }
   }, [dispatch, isAuthenticated]);
 
