@@ -1,6 +1,10 @@
 // API Configuration
+// BASE_URL precedence: 1) VITE_API_URL env variable, 2) Render server, 3) localhost
 export const API_CONFIG = {
-  BASE_URL: import.meta.env.VITE_API_URL || "http://localhost:5000/api",
+  BASE_URL:
+    import.meta.env.VITE_API_URL ||
+    "https://product-server-2-0x9w.onrender.com/api" ||
+    "http://localhost:5000/api",
   TIMEOUT: 10000, // 10 seconds
 };
 
