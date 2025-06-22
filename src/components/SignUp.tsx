@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { User, Mail, Lock, AlertCircle } from "lucide-react";
+import { User, Mail, Lock, AlertCircle, Eye, EyeOff } from "lucide-react";
 import { useAppDispatch } from "../hooks/useAppDispatch";
 import { useAppSelector } from "../hooks/useAppSelector";
 import { signupUser, clearError } from "../store/slices/authSlice";
@@ -10,6 +10,7 @@ const SignUp: React.FC = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { isLoading, error, isAuthenticated } = useAppSelector(
@@ -114,14 +115,26 @@ const SignUp: React.FC = () => {
         <div className="relative">
           <Lock className="absolute left-3 md:left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
           <input
-            type="password"
+            type={showPassword ? "text" : "password"}
             placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full pl-10 md:pl-12 pr-4 py-3 md:py-4 bg-gray-50 border-0 rounded-lg text-base md:text-lg placeholder-gray-400 focus:ring-2 focus:ring-amber-500 focus:bg-white transition-all duration-200"
+            className="w-full pl-10 md:pl-12 pr-12 py-3 md:py-4 bg-gray-50 border-0 rounded-lg text-base md:text-lg placeholder-gray-400 focus:ring-2 focus:ring-amber-500 focus:bg-white transition-all duration-200"
             required
             disabled={isLoading}
           />
+          <button
+            type="button"
+            onClick={() => setShowPassword((prev) => !prev)}
+            className="absolute right-3 md:right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-amber-500"
+            tabIndex={-1}
+          >
+            {showPassword ? (
+              <EyeOff className="w-5 h-5" />
+            ) : (
+              <Eye className="w-5 h-5" />
+            )}
+          </button>
         </div>
 
         <button

@@ -31,6 +31,7 @@ const Home: React.FC = () => {
   const [isAddSubCategoryModalOpen, setIsAddSubCategoryModalOpen] =
     useState(false);
   const [isAddProductModalOpen, setIsAddProductModalOpen] = useState(false);
+  const [addProductModalKey, setAddProductModalKey] = useState(0);
   const {
     filteredProducts,
     currentPage,
@@ -284,14 +285,22 @@ const Home: React.FC = () => {
 
   const handleAddCategory = async (categoryName: string) => {
     await dispatch(createCategory(categoryName)).unwrap();
+    await dispatch(fetchCategories());
+    setIsAddCategoryModalOpen(false);
   };
 
   const handleAddSubCategory = async (name: string, categoryId: string) => {
     await dispatch(createSubCategory({ name, categoryId })).unwrap();
+    await dispatch(fetchSubCategories());
+    setIsAddSubCategoryModalOpen(false);
   };
 
   const handleAddProduct = async (formData: FormData) => {
     await dispatch(createProduct(formData)).unwrap();
+    await dispatch(fetchProducts({}));
+    await dispatch(fetchSubCategories());
+    setIsAddProductModalOpen(false);
+    setAddProductModalKey((k) => k + 1); // force remount to reset modal state
   };
 
   return (
@@ -460,11 +469,13 @@ const Home: React.FC = () => {
         isLoading={isLoading}
       />
       <AddProductModal
+        key={addProductModalKey}
         isOpen={isAddProductModalOpen}
         onClose={() => setIsAddProductModalOpen(false)}
         onAddProduct={handleAddProduct}
         subCategories={allSubCategories}
         isLoading={isLoading}
+        initialData={null}
       />
     </div>
   );

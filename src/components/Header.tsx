@@ -11,6 +11,7 @@ import {
 } from "../store/slices/productSlice";
 import { logoutUser } from "../store/slices/authSlice";
 import { useNavigate } from "react-router-dom";
+import ConfirmationModal from "./ConfirmationModal";
 
 interface HeaderProps {
   onMenuToggle?: () => void;
@@ -36,6 +37,7 @@ const Header: React.FC<HeaderProps> = ({
   } = useAppSelector((state) => state.products);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const [showSignOutModal, setShowSignOutModal] = useState(false);
 
   // Sync search input with Redux state
   useEffect(() => {
@@ -178,7 +180,7 @@ const Header: React.FC<HeaderProps> = ({
         ></div>
 
         {/* Search Bar */}
-        <form onSubmit={handleSearch} className="flex-1 max-w-2xl mx-2 md:mx-8">
+        <form onSubmit={handleSearch} className="flex-1 max-w-lg mx-2 md:mx-8">
           <div className="relative">
             {/* Mobile Search Toggle */}
             <div className="md:hidden">
@@ -250,7 +252,7 @@ const Header: React.FC<HeaderProps> = ({
           </div>
         </form>
 
-        {/* Right side actions - Hidden on mobile when search is expanded */}
+        {/* Right side actions - Wishlist, Cart, Profile (rightmost) */}
         <div
           className={`flex items-center space-x-3 md:space-x-6 ${
             isSearchExpanded ? "hidden" : "flex"
@@ -268,8 +270,17 @@ const Header: React.FC<HeaderProps> = ({
               </span>
             )}
           </button>
-
-          {/* User */}
+          {/* Cart */}
+          <button className="relative text-white hover:text-amber-300 transition-colors flex items-center space-x-1">
+            <ShoppingCart className="w-5 h-5 md:w-6 md:h-6" />
+            <span className="hidden sm:block text-sm md:text-base">Cart</span>
+            {itemCount > 0 && (
+              <span className="absolute -top-2 -right-2 bg-amber-500 text-white text-xs rounded-full w-4 h-4 md:w-5 md:h-5 flex items-center justify-center text-[10px] md:text-xs">
+                {itemCount}
+              </span>
+            )}
+          </button>
+          {/* Profile icon, name, and sign out (rightmost) */}
           {user ? (
             <div className="flex items-center space-x-2 text-white">
               <User className="w-4 h-4 md:w-5 md:h-5" />
@@ -277,11 +288,21 @@ const Header: React.FC<HeaderProps> = ({
                 {user.name}
               </span>
               <button
-                onClick={handleLogout}
+                onClick={() => setShowSignOutModal(true)}
                 className="ml-2 md:ml-4 text-amber-300 hover:text-amber-400 transition-colors text-sm md:text-base"
               >
                 Sign out
               </button>
+              <ConfirmationModal
+                isOpen={showSignOutModal}
+                onClose={() => setShowSignOutModal(false)}
+                onConfirm={() => {
+                  setShowSignOutModal(false);
+                  handleLogout();
+                }}
+                title="Sign Out"
+                message="Are you sure you want to sign out?"
+              />
             </div>
           ) : (
             <button
@@ -294,17 +315,6 @@ const Header: React.FC<HeaderProps> = ({
               </span>
             </button>
           )}
-
-          {/* Cart */}
-          <button className="relative text-white hover:text-amber-300 transition-colors flex items-center space-x-1">
-            <ShoppingCart className="w-5 h-5 md:w-6 md:h-6" />
-            <span className="hidden sm:block text-sm md:text-base">Cart</span>
-            {itemCount > 0 && (
-              <span className="absolute -top-2 -right-2 bg-amber-500 text-white text-xs rounded-full w-4 h-4 md:w-5 md:h-5 flex items-center justify-center text-[10px] md:text-xs">
-                {itemCount}
-              </span>
-            )}
-          </button>
         </div>
       </div>
     </header>
