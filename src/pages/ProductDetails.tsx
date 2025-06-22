@@ -63,16 +63,55 @@ const ProductDetails: React.FC = () => {
     }
   };
 
-  if (isLoading && !isEditModalOpen && !isConfirmModalOpen) {
-    return <div>Loading...</div>;
-  }
+  const productIsNotReady = !selectedProduct || selectedProduct.id !== id;
 
-  if (error) {
-    return <div>Error: {error}</div>;
+  if (!isEditModalOpen && !isConfirmModalOpen) {
+    if (error) {
+      return (
+        <div className="bg-gray-50 min-h-screen">
+          <Header />
+          <div className="min-h-[calc(100vh-80px)] flex items-center justify-center">
+            Error: {error}
+          </div>
+        </div>
+      );
+    }
+
+    if (isLoading || productIsNotReady) {
+      return (
+        <div className="bg-gray-50 min-h-screen">
+          <Header />
+          <div className="min-h-[calc(100vh-80px)] flex items-center justify-center">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-500 mx-auto mb-4"></div>
+              <p className="text-gray-600">Loading product details...</p>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    if (!selectedProduct) {
+      return (
+        <div className="bg-gray-50 min-h-screen">
+          <Header />
+          <div className="min-h-[calc(100vh-80px)] flex items-center justify-center">
+            Product not found.
+          </div>
+        </div>
+      );
+    }
   }
 
   if (!selectedProduct) {
-    return <div>Product not found.</div>;
+    return (
+      <div className="bg-gray-50 min-h-screen">
+        <Header />
+        <div className="min-h-[calc(100vh-80px)] flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-500 mx-auto mb-4"></div>
+        </div>
+      </div>
+    );
   }
 
   const { title, variants, images, description } = selectedProduct;
